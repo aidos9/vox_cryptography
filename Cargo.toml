@@ -1,0 +1,13 @@
+[package]
+name = "vox_cryptography"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+
+[dev-dependencies]
+pretty_assertions = "1.2"
