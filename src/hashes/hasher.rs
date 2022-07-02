@@ -36,7 +36,10 @@ where
         return Self::default();
     }
 
-    fn update(&mut self, chunk: &[u8]);
+    /// This function should update the current state of the hash.
+    /// * `chunk` - The chunk of data that has been provided, it will be of the exact value of `CHUNK_SIZE`.
+    /// * 'bytes_processed' - The number of bytes that have been processed thus far. This includes the chunk being provided
+    fn update(&mut self, chunk: &[u8], bytes_processed: u128);
 
     fn finalize(self, partial_chunk: &[u8], total_bytes_processed: u128) -> Self::Output;
 }
@@ -58,7 +61,10 @@ impl<H: HashingAlgorithm> Hasher<H> {
             let amount_processed = self.fill_buffer(&input[total_processed..]);
 
             if self.buffer_is_full() {
-                self.algorithm.update(self.unprocessed_bytes.as_ref());
+                self.algorithm.update(
+                    self.unprocessed_bytes.as_ref(),
+                    self.bytes_processed + H::CHUNK_SIZE as u128,
+                );
 
                 self.chunk_len = 0;
             } else {

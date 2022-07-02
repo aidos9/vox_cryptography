@@ -26,7 +26,7 @@ impl HashingAlgorithm for SHA1 {
         return [0u8; Self::CHUNK_SIZE];
     }
 
-    fn update(&mut self, chunk: &[u8]) {
+    fn update(&mut self, chunk: &[u8], _bytes_processed: u128) {
         let mut schedule = [0u32; 80];
 
         copy_512bit_chunk(chunk, &mut schedule);
@@ -79,27 +79,27 @@ impl HashingAlgorithm for SHA1 {
     fn finalize(mut self, partial_chunk: &[u8], total_bytes_processed: u128) -> Self::Output {
         // Check if we need 2 blocks to make a multiple of 512 bits
         if partial_chunk.len() == 64 {
-            self.update(partial_chunk);
+            self.update(partial_chunk, total_bytes_processed);
 
             let mut chunk = [0u8; 64];
             chunk[0] = 0b1000_0000;
             chunk[56..].copy_from_slice(
                 &(((total_bytes_processed * 8) % Self::LENGTH_MODULO) as u64).to_be_bytes(),
             );
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         } else if partial_chunk.len() + 9 > 64 {
             let mut chunk_a = [0u8; 64];
             chunk_a[0..partial_chunk.len()].copy_from_slice(partial_chunk);
             chunk_a[partial_chunk.len()] = 0b1000_0000;
 
-            self.update(&chunk_a);
+            self.update(&chunk_a, total_bytes_processed);
 
             let mut chunk = [0u8; 64];
             chunk[56..].copy_from_slice(
                 &(((total_bytes_processed * 8) % Self::LENGTH_MODULO) as u64).to_be_bytes(),
             );
 
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         } else {
             let mut chunk = [0u8; 64];
 
@@ -109,7 +109,7 @@ impl HashingAlgorithm for SHA1 {
                 &(((total_bytes_processed * 8) % Self::LENGTH_MODULO) as u64).to_be_bytes(),
             );
 
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         }
 
         let mut output = [0u8; 20];

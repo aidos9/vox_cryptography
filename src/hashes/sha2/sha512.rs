@@ -33,8 +33,8 @@ impl HashingAlgorithm for SHA384 {
         return <SHA512 as HashingAlgorithm>::empty_chunk();
     }
 
-    fn update(&mut self, chunk: &[u8]) {
-        self.internal_hasher.update(chunk);
+    fn update(&mut self, chunk: &[u8], bytes_processed: u128) {
+        self.internal_hasher.update(chunk, bytes_processed);
     }
 
     fn finalize(self, partial_chunk: &[u8], total_bytes_processed: u128) -> Self::Output {
@@ -72,7 +72,7 @@ impl HashingAlgorithm for SHA512 {
         return [0u8; 128];
     }
 
-    fn update(&mut self, chunk: &[u8]) {
+    fn update(&mut self, chunk: &[u8], _bytes_processed: u128) {
         let mut schedule = [0u64; 80];
 
         copy_1024bit_chunk(chunk, &mut schedule);
@@ -134,25 +134,25 @@ impl HashingAlgorithm for SHA512 {
     fn finalize(mut self, partial_chunk: &[u8], total_bytes_processed: u128) -> Self::Output {
         // Check if we need 2 blocks to make a multiple of 1024 bits
         if partial_chunk.len() == Self::CHUNK_SIZE {
-            self.update(partial_chunk);
+            self.update(partial_chunk, total_bytes_processed);
 
             let mut chunk = [0u8; Self::CHUNK_SIZE];
             chunk[0] = 0b1000_0000;
             chunk[Self::CHUNK_SIZE - 16..]
                 .copy_from_slice(&(total_bytes_processed * 8).to_be_bytes());
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         } else if partial_chunk.len() + 9 > Self::CHUNK_SIZE {
             let mut chunk_a = [0u8; Self::CHUNK_SIZE];
             chunk_a[0..partial_chunk.len()].copy_from_slice(partial_chunk);
             chunk_a[partial_chunk.len()] = 0b1000_0000;
 
-            self.update(&chunk_a);
+            self.update(&chunk_a, total_bytes_processed);
 
             let mut chunk = [0u8; Self::CHUNK_SIZE];
             chunk[Self::CHUNK_SIZE - 16..]
                 .copy_from_slice(&(total_bytes_processed * 8).to_be_bytes());
 
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         } else {
             let mut chunk = [0u8; Self::CHUNK_SIZE];
 
@@ -161,7 +161,7 @@ impl HashingAlgorithm for SHA512 {
             chunk[Self::CHUNK_SIZE - 16..]
                 .copy_from_slice(&(total_bytes_processed * 8).to_be_bytes());
 
-            self.update(&chunk);
+            self.update(&chunk, total_bytes_processed);
         }
 
         let mut output = [0u8; 64];
@@ -256,7 +256,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sha384_long_input() {
+    fn test_sha384_large_input() {
         let input = b"this test should be longer than one block and a bit longer than 2 blocks. This means it must be 3 or more blocks, how about that! Well this last bit of text is just filling for space :)";
 
         assert_eq!(
