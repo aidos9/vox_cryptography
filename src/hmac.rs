@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 const OPAD: u8 = 0x5c;
 const IPAD: u8 = 0x36;
 
-fn hmac<H: HashingAlgorithm>(key: &[u8], msg: &[u8]) -> H::Output {
+pub(crate) fn hmac<H: HashingAlgorithm>(key: &[u8], msg: &[u8]) -> H::Output {
     let mut o_kp = H::empty_chunk();
     let mut dbl: Vec<u8> = Vec::with_capacity(H::CHUNK_SIZE * 2);
     let mut i_kp: Vec<u8> = Vec::with_capacity(H::CHUNK_SIZE + msg.len());

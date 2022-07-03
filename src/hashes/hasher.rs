@@ -13,8 +13,8 @@ pub trait HashingAlgorithm
 where
     Self: Sized + Default,
 {
-    type Chunk: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]>;
-    type Output: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]>;
+    type Chunk: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]> + Clone + Copy;
+    type Output: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]> + Clone + Copy;
 
     const CHUNK_SIZE: usize;
     const OUTPUT_SIZE: usize;

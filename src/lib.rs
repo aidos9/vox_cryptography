@@ -7,4 +7,6 @@ pub mod block_ciphers;
 pub mod hashes;
 #[cfg(any(feature = "alloc", feature = "std"))]
 pub mod hmac;
+#[cfg(any(feature = "alloc", feature = "std"))]
+pub mod kdf;
 pub mod random;
