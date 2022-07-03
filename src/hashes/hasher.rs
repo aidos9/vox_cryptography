@@ -1,6 +1,6 @@
 use core::cmp::min;
 use core::default::Default;
-use core::ops::{Index, IndexMut};
+use core::ops::IndexMut;
 
 pub struct Hasher<H: HashingAlgorithm> {
     unprocessed_bytes: H::Chunk,
@@ -14,7 +14,7 @@ where
     Self: Sized + Default,
 {
     type Chunk: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]>;
-    type Output: Index<usize>;
+    type Output: IndexMut<usize> + AsMut<[u8]> + AsRef<[u8]>;
 
     const CHUNK_SIZE: usize;
     const OUTPUT_SIZE: usize;

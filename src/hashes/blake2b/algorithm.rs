@@ -196,7 +196,7 @@ impl Default for BLAKE2b {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use pretty_assertions::assert_eq;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_blake2b_512_empty() {
