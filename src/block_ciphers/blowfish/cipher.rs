@@ -1,6 +1,5 @@
 use super::constants::*;
 use super::BlowfishKey;
-use crate::error::VCryptoError;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Blowfish {
@@ -11,14 +10,7 @@ pub struct Blowfish {
 }
 
 impl Blowfish {
-    pub fn new(key: BlowfishKey, block: &[u8]) -> Result<Self, VCryptoError> {
-        if block.len() != 8 {
-            return Err(VCryptoError::InvalidBlockSize {
-                block_size: block.len(),
-                expected: 8,
-            });
-        }
-
+    pub fn new(key: BlowfishKey, block: [u8; 8]) -> Self {
         let block_left = u32::from_le(
             ((block[0] as u32) << 24)
                 | ((block[1] as u32) << 16)
@@ -42,7 +34,7 @@ impl Blowfish {
 
         s.expand_key();
 
-        return Ok(s);
+        return s;
     }
 
     fn expand_key(&mut self) {
@@ -139,9 +131,10 @@ mod tests {
     #[test]
     fn test_blowfish_test_1() {
         let key = hex::decode("0000000000000000").unwrap();
-        let pt = hex::decode("0000000000000000").unwrap();
+        let mut pt = [0u8; 8];
+        hex::decode_to_slice("0000000000000000", &mut pt).unwrap();
 
-        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), &pt).unwrap();
+        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), pt.into());
 
         assert_eq!(hex::encode(encryptor.encrypt()), "4ef997456198dd78");
     }
@@ -149,9 +142,10 @@ mod tests {
     #[test]
     fn test_blowfish_test_2() {
         let key = hex::decode("ffffffffffffffff").unwrap();
-        let pt = hex::decode("ffffffffffffffff").unwrap();
+        let mut pt = [0u8; 8];
+        hex::decode_to_slice("ffffffffffffffff", &mut pt).unwrap();
 
-        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), &pt).unwrap();
+        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), pt);
 
         assert_eq!(hex::encode(encryptor.encrypt()), "51866fd5b85ecb8a");
     }

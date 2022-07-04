@@ -30,11 +30,11 @@ with open("tests/raw_blowfish.rs", "w") as raw_blowfish_file:
         cipher = case[2]
 
         key = "\tlet key = hex::decode(\"{}\").unwrap();\n".format(key)
-        input_encrypt = "\tlet input = hex::decode(\"{}\").unwrap();\n\n".format(
+        input_encrypt = "\tlet mut input = [0u8; 8];\n\thex::decode_to_slice(\"{}\", &mut input).unwrap();\n\n".format(
             clear)
-        input_decrypt = "\tlet input = hex::decode(\"{}\").unwrap();\n\n".format(
+        input_decrypt = "\tlet mut input = [0u8; 8];\n\thex::decode_to_slice(\"{}\", &mut input).unwrap();\n\n".format(
             cipher)
-        cipher_line = "\tlet cipher = Blowfish::new(BlowfishKey::new(&key).unwrap(), &input).unwrap();\n"
+        cipher_line = "\tlet cipher = Blowfish::new(BlowfishKey::new(&key).unwrap(), input);\n"
         assert_statement_encrypt = "\tassert_eq!(hex::encode(cipher.encrypt()), \"{}\");\n}}\n\n".format(
             cipher)
         assert_statement_decrypt = "\tassert_eq!(hex::encode(cipher.decrypt()), \"{}\");\n}}\n\n".format(
