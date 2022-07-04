@@ -11,17 +11,38 @@ pub struct Blowfish {
 }
 
 impl Blowfish {
-    pub fn new(key: BlowfishKey) -> Self {
+    pub fn new(key: BlowfishKey, block: &[u8]) -> Result<Self, VCryptoError> {
+        if block.len() != 8 {
+            return Err(VCryptoError::InvalidBlockSize {
+                block_size: block.len(),
+                expected: 8,
+            });
+        }
+
+        let block_left = u32::from_le(
+            ((block[0] as u32) << 24)
+                | ((block[1] as u32) << 16)
+                | ((block[2] as u32) << 8)
+                | (block[3] as u32),
+        );
+
+        let block_right = u32::from_le(
+            ((block[4] as u32) << 24)
+                | ((block[5] as u32) << 16)
+                | ((block[6] as u32) << 8)
+                | (block[7] as u32),
+        );
+
         let mut s = Self {
             round_keys: key.round_keys(),
             s_boxes: BLOWFISH_S_BOXES,
-            block_left: 0,
-            block_right: 0,
+            block_left,
+            block_right,
         };
 
         s.expand_key();
 
-        return s;
+        return Ok(s);
     }
 
     fn expand_key(&mut self) {
@@ -43,28 +64,7 @@ impl Blowfish {
         }
     }
 
-    pub fn encrypt(mut self, block: &[u8]) -> Result<[u8; 8], VCryptoError> {
-        if block.len() != 8 {
-            return Err(VCryptoError::InvalidBlockSize {
-                block_size: block.len(),
-                expected: 8,
-            });
-        }
-
-        self.block_left = u32::from_le(
-            ((block[0] as u32) << 24)
-                | ((block[1] as u32) << 16)
-                | ((block[2] as u32) << 8)
-                | (block[3] as u32),
-        );
-
-        self.block_right = u32::from_le(
-            ((block[4] as u32) << 24)
-                | ((block[5] as u32) << 16)
-                | ((block[6] as u32) << 8)
-                | (block[7] as u32),
-        );
-
+    pub fn encrypt(mut self) -> [u8; 8] {
         (self.block_left, self.block_right) =
             self.blowfish_encrypt(self.block_left, self.block_right);
 
@@ -73,31 +73,10 @@ impl Blowfish {
         output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
         output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
 
-        return Ok(output);
+        return output;
     }
 
-    pub fn decrypt(mut self, block: &[u8]) -> Result<[u8; 8], VCryptoError> {
-        if block.len() != 8 {
-            return Err(VCryptoError::InvalidBlockSize {
-                block_size: block.len(),
-                expected: 8,
-            });
-        }
-
-        self.block_left = u32::from_le(
-            ((block[0] as u32) << 24)
-                | ((block[1] as u32) << 16)
-                | ((block[2] as u32) << 8)
-                | (block[3] as u32),
-        );
-
-        self.block_right = u32::from_le(
-            ((block[4] as u32) << 24)
-                | ((block[5] as u32) << 16)
-                | ((block[6] as u32) << 8)
-                | (block[7] as u32),
-        );
-
+    pub fn decrypt(mut self) -> [u8; 8] {
         (self.block_left, self.block_right) =
             self.blowfish_decrypt(self.block_left, self.block_right);
 
@@ -106,7 +85,7 @@ impl Blowfish {
         output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
         output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
 
-        return Ok(output);
+        return output;
     }
 
     fn blowfish_encrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
@@ -162,12 +141,9 @@ mod tests {
         let key = hex::decode("0000000000000000").unwrap();
         let pt = hex::decode("0000000000000000").unwrap();
 
-        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap());
+        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), &pt).unwrap();
 
-        assert_eq!(
-            hex::encode(encryptor.encrypt(&pt).unwrap()),
-            "4ef997456198dd78"
-        );
+        assert_eq!(hex::encode(encryptor.encrypt()), "4ef997456198dd78");
     }
 
     #[test]
@@ -175,11 +151,8 @@ mod tests {
         let key = hex::decode("ffffffffffffffff").unwrap();
         let pt = hex::decode("ffffffffffffffff").unwrap();
 
-        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap());
+        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap(), &pt).unwrap();
 
-        assert_eq!(
-            hex::encode(encryptor.encrypt(&pt).unwrap()),
-            "51866fd5b85ecb8a"
-        );
+        assert_eq!(hex::encode(encryptor.encrypt()), "51866fd5b85ecb8a");
     }
 }

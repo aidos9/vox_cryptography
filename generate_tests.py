@@ -34,10 +34,10 @@ with open("tests/raw_blowfish.rs", "w") as raw_blowfish_file:
             clear)
         input_decrypt = "\tlet input = hex::decode(\"{}\").unwrap();\n\n".format(
             cipher)
-        cipher_line = "\tlet cipher = Blowfish::new(BlowfishKey::new(&key).unwrap());\n"
-        assert_statement_encrypt = "\tassert_eq!(hex::encode(cipher.encrypt(&input).unwrap()), \"{}\");\n}}\n\n".format(
+        cipher_line = "\tlet cipher = Blowfish::new(BlowfishKey::new(&key).unwrap(), &input).unwrap();\n"
+        assert_statement_encrypt = "\tassert_eq!(hex::encode(cipher.encrypt()), \"{}\");\n}}\n\n".format(
             cipher)
-        assert_statement_decrypt = "\tassert_eq!(hex::encode(cipher.decrypt(&input).unwrap()), \"{}\");\n}}\n\n".format(
+        assert_statement_decrypt = "\tassert_eq!(hex::encode(cipher.decrypt()), \"{}\");\n}}\n\n".format(
             clear)
 
         raw_blowfish_file.write(header_encrypt)
