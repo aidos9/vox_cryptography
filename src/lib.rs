@@ -4,6 +4,7 @@
 extern crate alloc;
 
 pub mod block_ciphers;
+pub mod error;
 pub mod hashes;
 #[cfg(any(feature = "alloc", feature = "std"))]
 pub mod hmac;

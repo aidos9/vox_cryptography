@@ -9,7 +9,7 @@ pub struct AES {
 }
 
 impl AES {
-    pub fn new(block: [u8; 16], key: AESKey) -> Self {
+    pub fn new(key: AESKey, block: [u8; 16]) -> Self {
         let mut state = [[0u8; 4]; 4];
 
         for i in 0..4 as usize {
@@ -282,7 +282,7 @@ mod tests {
                     0x37, 0x07, 0x34,
                 ];
 
-                let mut cipher = AES::new(input, AESKey::new_aes128(key));
+                let mut cipher = AES::new(AESKey::new_aes128(key), input);
 
                 cipher.add_round_key(0);
 
@@ -305,7 +305,7 @@ mod tests {
                     0x37, 0x07, 0x34,
                 ];
 
-                let mut cipher = AES::new(input, AESKey::new_aes128(key));
+                let mut cipher = AES::new(AESKey::new_aes128(key), input);
 
                 cipher.add_round_key(0);
                 cipher.encryption_round(1);
@@ -330,7 +330,7 @@ mod tests {
                     0x37, 0x07, 0x34,
                 ];
 
-                let cipher = AES::new(input, AESKey::new_aes128(key));
+                let cipher = AES::new(AESKey::new_aes128(key), input);
 
                 assert_eq!(
                     cipher.encrypt(),
@@ -350,7 +350,7 @@ mod tests {
                 ];
 
                 assert_eq!(
-                    AES::new(input, AESKey::new_aes128(key)).encrypt(),
+                    AES::new(AESKey::new_aes128(key), input).encrypt(),
                     [
                         0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80,
                         0x70, 0xb4, 0xc5, 0x5a
@@ -371,7 +371,7 @@ mod tests {
                     0x6a, 0x50, 0x49,
                 ];
 
-                let mut cipher = AES::new(input, AESKey::new_aes128(key));
+                let mut cipher = AES::new(AESKey::new_aes128(key), input);
 
                 cipher.decryption_round(1);
                 cipher.add_round_key(0);
@@ -396,7 +396,7 @@ mod tests {
                 ];
 
                 assert_eq!(
-                    AES::new(input, AESKey::new_aes128(key)).decrypt(),
+                    AES::new(AESKey::new_aes128(key), input,).decrypt(),
                     [
                         0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
                         0xcc, 0xdd, 0xee, 0xff,
@@ -421,7 +421,7 @@ mod tests {
                 0xee, 0xff,
             ];
 
-            let cipher = AES::new(input, AESKey::new_aes192(key));
+            let cipher = AES::new(AESKey::new_aes192(key), input);
 
             assert_eq!(
                 cipher.encrypt(),
@@ -443,7 +443,7 @@ mod tests {
                 0x71, 0x91,
             ];
 
-            let cipher = AES::new(input, AESKey::new_aes192(key));
+            let cipher = AES::new(AESKey::new_aes192(key), input);
 
             assert_eq!(
                 cipher.decrypt(),
@@ -471,7 +471,7 @@ mod tests {
                 0xee, 0xff,
             ];
 
-            let cipher = AES::new(input, AESKey::new_aes256(key));
+            let cipher = AES::new(AESKey::new_aes256(key), input);
 
             assert_eq!(
                 cipher.encrypt(),
@@ -494,7 +494,7 @@ mod tests {
                 0x60, 0x89,
             ];
 
-            let cipher = AES::new(input, AESKey::new_aes256(key));
+            let cipher = AES::new(AESKey::new_aes256(key), input);
 
             assert_eq!(
                 cipher.decrypt(),
