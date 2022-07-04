@@ -1,3 +1,5 @@
+use crate::block_ciphers::BlockCipher;
+
 use super::constants::{INV_S_BOX, S_BOX};
 use super::AESKey;
 
@@ -9,47 +11,6 @@ pub struct AES {
 }
 
 impl AES {
-    pub fn new(key: AESKey, block: [u8; 16]) -> Self {
-        let mut state = [[0u8; 4]; 4];
-
-        for i in 0..4 as usize {
-            state[i][0] = block[i * 4];
-            state[i][1] = block[i * 4 + 1];
-            state[i][2] = block[i * 4 + 2];
-            state[i][3] = block[i * 4 + 3];
-        }
-
-        return Self { state, key };
-    }
-
-    pub fn encrypt(mut self) -> [u8; 16] {
-        self.add_round_key(0);
-
-        for i in 0..(self.key.variant().rounds_required() - 2) {
-            self.encryption_round(i + 1);
-        }
-
-        self.sub_bytes();
-        self.shift_rows();
-        self.add_round_key(self.key.variant().rounds_required() - 1);
-
-        return self.flattened_state();
-    }
-
-    pub fn decrypt(mut self) -> [u8; 16] {
-        self.add_round_key(self.key.variant().rounds_required() - 1);
-        self.inv_shift_rows();
-        self.inv_sub_bytes();
-
-        for i in (0..(self.key.variant().rounds_required() - 2)).rev() {
-            self.decryption_round(i + 1);
-        }
-
-        self.add_round_key(0);
-
-        return self.flattened_state();
-    }
-
     fn flattened_state(self) -> [u8; 16] {
         let mut output = [0u8; 16];
 
@@ -241,6 +202,58 @@ impl AES {
             ^ Self::galois_multiplication(13, a[1])
             ^ Self::galois_multiplication(9, a[2])
             ^ Self::galois_multiplication(14, a[3]);
+    }
+}
+
+impl<'a> BlockCipher<'a> for AES {
+    type Key = AESKey;
+    type Block = [u8; 16];
+
+    const BLOCK_SIZE: usize = 16;
+
+    fn empty_block() -> Self::Block {
+        return [0u8; Self::BLOCK_SIZE];
+    }
+
+    fn new(key: Self::Key, block: Self::Block) -> Self {
+        let mut state = [[0u8; 4]; 4];
+
+        for i in 0..4 as usize {
+            state[i][0] = block[i * 4];
+            state[i][1] = block[i * 4 + 1];
+            state[i][2] = block[i * 4 + 2];
+            state[i][3] = block[i * 4 + 3];
+        }
+
+        return Self { state, key };
+    }
+
+    fn encrypt(mut self) -> Self::Block {
+        self.add_round_key(0);
+
+        for i in 0..(self.key.variant().rounds_required() - 2) {
+            self.encryption_round(i + 1);
+        }
+
+        self.sub_bytes();
+        self.shift_rows();
+        self.add_round_key(self.key.variant().rounds_required() - 1);
+
+        return self.flattened_state();
+    }
+
+    fn decrypt(mut self) -> Self::Block {
+        self.add_round_key(self.key.variant().rounds_required() - 1);
+        self.inv_shift_rows();
+        self.inv_sub_bytes();
+
+        for i in (0..(self.key.variant().rounds_required() - 2)).rev() {
+            self.decryption_round(i + 1);
+        }
+
+        self.add_round_key(0);
+
+        return self.flattened_state();
     }
 }
 

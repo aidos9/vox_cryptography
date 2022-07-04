@@ -6,20 +6,9 @@ dict = json.load(open("test_cases.json", "r"))
 with open("tests/raw_blowfish.rs", "w") as raw_blowfish_file:
     i = 1
     raw_blowfish_file.write(
-        "use vox_cryptography::block_ciphers::blowfish::{Blowfish, BlowfishKey};\nuse pretty_assertions::assert_eq;\n\n")
+        "use vox_cryptography::block_ciphers::blowfish::{Blowfish, BlowfishKey};\nuse vox_cryptography::block_ciphers::BlockCipher;\nuse pretty_assertions::assert_eq;\n\n")
 
     for case in dict["raw"]["blowfish"]:
-        """
-        let key = hex::decode("0000000000000000").unwrap();
-        let pt = hex::decode("0000000000000000").unwrap();
-
-        let encryptor = Blowfish::new(BlowfishKey::new(&key).unwrap());
-
-        assert_eq!(
-            hex::encode(encryptor.encrypt(&pt).unwrap()),
-            "4ef997456198dd78"
-        );
-        """
         header_encrypt = "#[test]\nfn raw_blowfish_encrypt_test_{}() {{\n".format(
             i)
         header_decrypt = "#[test]\nfn raw_blowfish_decrypt_test_{}() {{\n".format(

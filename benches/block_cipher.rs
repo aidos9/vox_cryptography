@@ -1,6 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use vox_cryptography::block_ciphers::aes::{AESKey, AES};
 use vox_cryptography::block_ciphers::blowfish::{Blowfish, BlowfishKey};
+use vox_cryptography::block_ciphers::BlockCipher;
 
 fn aes_128_benchmark(c: &mut Criterion) {
     c.bench_function("aes128 - encrypt nist vector 1", |b| {

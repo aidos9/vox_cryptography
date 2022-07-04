@@ -8,6 +8,8 @@ pub enum VCryptoError {
     InvalidKeyLengthSmaller { key_length: usize, min: usize },
     InvalidBlockSize { block_size: usize, expected: usize },
     InvalidKey,
+    InvalidPadding,
+    InvalidInput,
 }
 
 #[cfg(feature = "std")]
@@ -29,6 +31,8 @@ impl Display for VCryptoError {
                 expected: _,
             } => write!(f, "invalid block size"),
             VCryptoError::InvalidKey => write!(f, "invalid key"),
+            VCryptoError::InvalidPadding => write!(f, "invalid padding"),
+            VCryptoError::InvalidInput => write!(f, "invalid input"),
         };
     }
 }
@@ -55,6 +59,8 @@ impl Debug for VCryptoError {
                 block_size, expected
             ),
             VCryptoError::InvalidKey => write!(f, "invalid key"),
+            VCryptoError::InvalidPadding => write!(f, "invalid padding"),
+            VCryptoError::InvalidInput => write!(f, "invalid input"),
         };
     }
 }

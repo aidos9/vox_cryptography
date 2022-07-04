@@ -1,5 +1,6 @@
 use pretty_assertions::assert_eq;
 use vox_cryptography::block_ciphers::blowfish::{Blowfish, BlowfishKey};
+use vox_cryptography::block_ciphers::BlockCipher;
 
 #[test]
 fn raw_blowfish_encrypt_test_1() {

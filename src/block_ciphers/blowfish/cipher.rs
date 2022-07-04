@@ -1,5 +1,6 @@
 use super::constants::*;
 use super::BlowfishKey;
+use crate::block_ciphers::BlockCipher;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Blowfish {
@@ -10,33 +11,6 @@ pub struct Blowfish {
 }
 
 impl Blowfish {
-    pub fn new(key: BlowfishKey, block: [u8; 8]) -> Self {
-        let block_left = u32::from_le(
-            ((block[0] as u32) << 24)
-                | ((block[1] as u32) << 16)
-                | ((block[2] as u32) << 8)
-                | (block[3] as u32),
-        );
-
-        let block_right = u32::from_le(
-            ((block[4] as u32) << 24)
-                | ((block[5] as u32) << 16)
-                | ((block[6] as u32) << 8)
-                | (block[7] as u32),
-        );
-
-        let mut s = Self {
-            round_keys: key.round_keys(),
-            s_boxes: BLOWFISH_S_BOXES,
-            block_left,
-            block_right,
-        };
-
-        s.expand_key();
-
-        return s;
-    }
-
     fn expand_key(&mut self) {
         let mut l = 0x0;
         let mut r = 0x0;
@@ -54,30 +28,6 @@ impl Blowfish {
                 self.s_boxes[i][c + 1] = r;
             }
         }
-    }
-
-    pub fn encrypt(mut self) -> [u8; 8] {
-        (self.block_left, self.block_right) =
-            self.blowfish_encrypt(self.block_left, self.block_right);
-
-        let mut output = [0u8; 8];
-
-        output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
-        output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
-
-        return output;
-    }
-
-    pub fn decrypt(mut self) -> [u8; 8] {
-        (self.block_left, self.block_right) =
-            self.blowfish_decrypt(self.block_left, self.block_right);
-
-        let mut output = [0u8; 8];
-
-        output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
-        output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
-
-        return output;
     }
 
     fn blowfish_encrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
@@ -120,6 +70,69 @@ impl Blowfish {
         return (self.s_boxes[0][a as usize].wrapping_add(self.s_boxes[1][b as usize])
             ^ self.s_boxes[2][c as usize])
             .wrapping_add(self.s_boxes[3][d as usize]);
+    }
+}
+
+impl<'a> BlockCipher<'a> for Blowfish {
+    type Key = BlowfishKey<'a>;
+
+    type Block = [u8; 8];
+
+    const BLOCK_SIZE: usize = 8;
+
+    fn empty_block() -> Self::Block {
+        return [0u8; Self::BLOCK_SIZE];
+    }
+
+    fn new(key: Self::Key, block: Self::Block) -> Self {
+        let block_left = u32::from_le(
+            ((block[0] as u32) << 24)
+                | ((block[1] as u32) << 16)
+                | ((block[2] as u32) << 8)
+                | (block[3] as u32),
+        );
+
+        let block_right = u32::from_le(
+            ((block[4] as u32) << 24)
+                | ((block[5] as u32) << 16)
+                | ((block[6] as u32) << 8)
+                | (block[7] as u32),
+        );
+
+        let mut s = Self {
+            round_keys: key.round_keys(),
+            s_boxes: BLOWFISH_S_BOXES,
+            block_left,
+            block_right,
+        };
+
+        s.expand_key();
+
+        return s;
+    }
+
+    fn encrypt(mut self) -> Self::Block {
+        (self.block_left, self.block_right) =
+            self.blowfish_encrypt(self.block_left, self.block_right);
+
+        let mut output = [0u8; 8];
+
+        output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
+        output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
+
+        return output;
+    }
+
+    fn decrypt(mut self) -> Self::Block {
+        (self.block_left, self.block_right) =
+            self.blowfish_decrypt(self.block_left, self.block_right);
+
+        let mut output = [0u8; 8];
+
+        output[0..4].copy_from_slice(&self.block_left.to_be_bytes());
+        output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
+
+        return output;
     }
 }
 
