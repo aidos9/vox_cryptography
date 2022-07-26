@@ -4,12 +4,31 @@ use std::error::Error;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum VCryptoError {
-    InvalidKeyLengthLarger { key_length: usize, max: usize },
-    InvalidKeyLengthSmaller { key_length: usize, min: usize },
-    InvalidBlockSize { block_size: usize, expected: usize },
+    InvalidKeyLengthLarger {
+        key_length: usize,
+        max: usize,
+    },
+    InvalidKeyLengthSmaller {
+        key_length: usize,
+        min: usize,
+    },
+    InvalidBlockSize {
+        block_size: usize,
+        expected: usize,
+    },
     InvalidKey,
     InvalidPadding,
     InvalidInput,
+    InvalidPasswordLength {
+        password_length: usize,
+        min: usize,
+        max: usize,
+    },
+    InvalidCost {
+        cost: usize,
+        min: usize,
+        max: usize,
+    },
 }
 
 #[cfg(feature = "std")]
@@ -33,6 +52,16 @@ impl Display for VCryptoError {
             VCryptoError::InvalidKey => write!(f, "invalid key"),
             VCryptoError::InvalidPadding => write!(f, "invalid padding"),
             VCryptoError::InvalidInput => write!(f, "invalid input"),
+            VCryptoError::InvalidPasswordLength {
+                password_length: _,
+                min: _,
+                max: _,
+            } => write!(f, "invalid password length"),
+            VCryptoError::InvalidCost {
+                cost: _,
+                min: _,
+                max: _,
+            } => write!(f, "invalid cost"),
         };
     }
 }
@@ -61,6 +90,20 @@ impl Debug for VCryptoError {
             VCryptoError::InvalidKey => write!(f, "invalid key"),
             VCryptoError::InvalidPadding => write!(f, "invalid padding"),
             VCryptoError::InvalidInput => write!(f, "invalid input"),
+            VCryptoError::InvalidPasswordLength {
+                password_length,
+                min,
+                max,
+            } => write!(
+                f,
+                "invalid password length ({}), the length should be between {} and {} bytes",
+                password_length, min, max
+            ),
+            VCryptoError::InvalidCost { cost, min, max } => write!(
+                f,
+                "invalid cost parameter ({}), the cost should be between {} and {}",
+                cost, min, max
+            ),
         };
     }
 }

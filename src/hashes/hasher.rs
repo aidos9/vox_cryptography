@@ -21,7 +21,7 @@ where
     const LENGTH_MODULO: u128;
 
     fn hasher() -> Hasher<Self> {
-        return Hasher::new(Self::new());
+        return Hasher::new(Self::default());
     }
 
     fn hash(input: &[u8]) -> Self::Output {
@@ -31,10 +31,6 @@ where
     }
 
     fn empty_chunk() -> Self::Chunk;
-
-    fn new() -> Self {
-        return Self::default();
-    }
 
     /// This function should update the current state of the hash.
     /// * `chunk` - The chunk of data that has been provided, it will be of the exact value of `CHUNK_SIZE`.

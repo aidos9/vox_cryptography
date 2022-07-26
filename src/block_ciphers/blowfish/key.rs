@@ -29,13 +29,13 @@ impl<'a> BlowfishKey<'a> {
         let mut keys = BLOWFISH_P_ARRAY;
 
         for i in 0..keys.len() {
-            let r = (i * 4) % self.key.len();
+            let r = i * 4;
 
             keys[i] ^= u32::from_le(
-                ((self.key[r] as u32) << 24)
-                    | ((self.key[r + 1] as u32) << 16)
-                    | ((self.key[r + 2] as u32) << 8)
-                    | (self.key[r + 3] as u32),
+                ((self.key[r % self.key.len()] as u32) << 24)
+                    | ((self.key[(r + 1) % self.key.len()] as u32) << 16)
+                    | ((self.key[(r + 2) % self.key.len()] as u32) << 8)
+                    | (self.key[(r + 3) % self.key.len()] as u32),
             );
         }
 

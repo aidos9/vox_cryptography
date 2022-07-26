@@ -1,5 +1,5 @@
 mod cipher;
-mod constants;
+pub(crate) mod constants;
 mod key;
 
 pub use cipher::*;

@@ -4,8 +4,8 @@ use crate::block_ciphers::BlockCipher;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Blowfish {
-    round_keys: [u32; 18],
-    s_boxes: [[u32; 256]; 4],
+    pub(crate) round_keys: [u32; 18],
+    pub(crate) s_boxes: [[u32; 256]; 4],
     block_left: u32,
     block_right: u32,
 }
@@ -133,6 +133,17 @@ impl<'a> BlockCipher<'a> for Blowfish {
         output[4..8].copy_from_slice(&self.block_right.to_be_bytes());
 
         return output;
+    }
+}
+
+impl Default for Blowfish {
+    fn default() -> Self {
+        return Self {
+            round_keys: BLOWFISH_P_ARRAY,
+            s_boxes: BLOWFISH_S_BOXES,
+            block_left: Default::default(),
+            block_right: Default::default(),
+        };
     }
 }
 
